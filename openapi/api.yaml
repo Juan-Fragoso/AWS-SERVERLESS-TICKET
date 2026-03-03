@@ -1,0 +1,478 @@
+openapi: 3.0.4
+info:
+  title: Serverless Ticket System - API
+  description: REST API for a serverless ticket system built with AWS Lambda and API Gateway.
+  contact:
+    email: lguisadom@gmail.com
+  version: 1.0.0
+externalDocs:
+  description: My Blog
+  url: https://blog.luisguisado.cloud
+tags:
+  - name: Ticket
+    description: Digital record used to track and manage support requests, problems, or incidents.
+paths:
+  /v1/tickets:
+    post:
+      tags:
+        - Ticket
+      security:
+        - bearerAuth: []
+      summary: Create new ticket
+      operationId: createTicket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTicketRequest"
+            examples:
+              basicTicket:
+                summary: Basic ticket
+                value:
+                  title: Bug in production
+                  description: Users cannot log in to the application
+                  status: OPEN
+                  reporterId: "550e8400-e29b-41d4-a716-446655440000"
+              urgentTicket:
+                summary: Urgent ticket
+                value:
+                  title: Database connection failure
+                  description: Critical database connection issue affecting all users
+                  status: OPEN
+                  reporterId: "550e8400-e29b-41d4-a716-446655440001"
+                  priority: CRITICAL
+                  type: INCIDENT
+              minimalTicket:
+                summary: Minimal ticket (using defaults)
+                value:
+                  title: Login issue
+                  description: Users reporting login problems
+                  reporterId: "550e8400-e29b-41d4-a716-446655440002"
+              customPriorityTicket:
+                summary: Ticket with custom priority only
+                value:
+                  title: Performance issue
+                  description: Application is running slow
+                  reporterId: "550e8400-e29b-41d4-a716-446655440003"
+                  priority: HIGH
+              customTypeTicket:
+                summary: Ticket with custom type only
+                value:
+                  title: How to reset password
+                  description: Need instructions for password reset
+                  reporterId: "550e8400-e29b-41d4-a716-446655440004"
+                  type: QUESTION
+      responses:
+        "201":
+          description: Ticket created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketResponse"
+              examples:
+                basicTicketResponse:
+                  summary: Basic ticket response
+                  value:
+                    id: "1b2c3d4e-5678-90ab-cdef-1234567890ab"
+                    title: Bug in production
+                    description: Users cannot log in to the application
+                    status: OPEN
+                    reporterId: "550e8400-e29b-41d4-a716-446655440000"
+                    assignedToId: null
+                    priority: MEDIUM
+                    type: INCIDENT
+                    createdAt: "2024-06-27T10:00:00Z"
+                    updatedAt: "2024-06-27T10:00:00Z"
+                urgentTicketResponse:
+                  summary: Urgent ticket response
+                  value:
+                    id: "2c3d4e5f-6789-01bc-def2-2345678901bc"
+                    title: Database connection failure
+                    description: Critical database connection issue affecting all users
+                    status: OPEN
+                    reporterId: "550e8400-e29b-41d4-a716-446655440001"
+                    assignedToId: null
+                    priority: CRITICAL
+                    type: INCIDENT
+                    createdAt: "2024-06-27T10:00:00Z"
+                    updatedAt: "2024-06-27T10:00:00Z"
+                minimalTicketResponse:
+                  summary: Minimal ticket response (with defaults)
+                  value:
+                    id: "3d4e5f6g-7890-12cd-ef34-3456789012cd"
+                    title: Login issue
+                    description: Users reporting login problems
+                    status: OPEN
+                    reporterId: "550e8400-e29b-41d4-a716-446655440002"
+                    assignedToId: null
+                    priority: MEDIUM
+                    type: INCIDENT
+                    createdAt: "2024-06-27T10:00:00Z"
+                    updatedAt: "2024-06-27T10:00:00Z"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    get:
+      tags:
+        - Ticket
+      security:
+        - bearerAuth: []
+      summary: Get all tickets
+      operationId: listTickets
+      responses:
+        "200":
+          description: List of tickets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListTicketResponse"
+              examples:
+                ticketsList:
+                  summary: List of tickets
+                  value:
+                    - id: "1b2c3d4e-5678-90ab-cdef-1234567890ab"
+                      title: Bug in production
+                      description: Users cannot log in to the application
+                      status: OPEN
+                      reporterId: "550e8400-e29b-41d4-a716-446655440000"
+                      assignedToId: null
+                      priority: MEDIUM
+                      type: INCIDENT
+                      createdAt: "2024-06-27T10:00:00Z"
+                      updatedAt: "2024-06-27T10:00:00Z"
+                    - id: "2c3d4e5f-6789-01bc-def2-2345678901bc"
+                      title: Database connection failure
+                      description: Critical database connection issue affecting all users
+                      status: OPEN
+                      reporterId: "550e8400-e29b-41d4-a716-446655440001"
+                      assignedToId: null
+                      priority: CRITICAL
+                      type: INCIDENT
+                      createdAt: "2024-06-27T10:00:00Z"
+                      updatedAt: "2024-06-27T10:00:00Z"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/tickets/{id}:
+    get:
+      tags:
+        - Ticket
+      security:
+        - bearerAuth: []
+      summary: Get ticket by ID
+      operationId: getTicket
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier of the ticket
+      responses:
+        "200":
+          description: Ticket found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    put:
+      tags:
+        - Ticket
+      security:
+        - bearerAuth: []
+      summary: Update ticket by ID (Total replacement of the entire resource)
+      operationId: updateTicket
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier of the ticket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTicketRequest"
+      responses:
+        "200":
+          description: Ticket updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    patch:
+      tags:
+        - Ticket
+      security:
+        - bearerAuth: []
+      summary: Update ticket by ID (Partial update of the resource)
+      operationId: patchTicket
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier of the ticket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchTicketRequest"
+      responses:
+        "204":
+          description: Ticket updated successfully
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    delete:
+      tags:
+        - Ticket
+      security:
+        - bearerAuth: []
+      summary: Delete ticket by ID
+      operationId: deleteTicket
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier of the ticket
+      responses:
+        "204":
+          description: Ticket deleted
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    TicketBase:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Brief title describing the ticket issue
+        description:
+          type: string
+          minLength: 1
+          maxLength: 250
+          description: Detailed description of the ticket issue
+        status:
+          type: string
+          enum: [NEW, OPEN, IN_PROGRESS, RESOLVED, CLOSED]
+          default: NEW
+          description: Current status of the ticket
+        reporterId:
+          type: string
+          format: uuid
+          description: Unique identifier of the user who reported the ticket.
+        assignedToId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Unique identifier of the user (agent) assigned to resolve the ticket.
+        priority:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+          default: MEDIUM
+          description: The urgency level of the ticket.
+        type:
+          type: string
+          enum: [INCIDENT, SERVICE_REQUEST, QUESTION]
+          default: INCIDENT
+          description: The category or type of the request
+
+    CreateTicketRequest:
+      allOf:
+        - $ref: "#/components/schemas/TicketBase"
+        - type: object
+          required:
+            - title
+            - description
+            - reporterId
+
+    UpdateTicketRequest:
+      allOf:
+        - $ref: "#/components/schemas/TicketBase"
+        - type: object
+          required:
+            - title
+            - description
+            - status
+            - reporterId
+            - priority
+            - type
+
+    PatchTicketRequest:
+      type: object
+      minProperties: 1
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 50
+        description:
+          type: string
+          minLength: 1
+          maxLength: 250
+        status:
+          type: string
+          enum: [NEW, OPEN, IN_PROGRESS, RESOLVED, CLOSED]
+        assignedToId:
+          type: string
+          format: uuid
+          nullable: true
+        priority:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+        type:
+          type: string
+          enum: [INCIDENT, SERVICE_REQUEST, QUESTION]
+
+    TicketResponse:
+      allOf:
+        - $ref: "#/components/schemas/TicketBase"
+        - type: object
+          required:
+            - id
+            - title
+            - description
+            - status
+            - reporterId
+            - priority
+            - type
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Unique identifier of the ticket
+            createdAt:
+              type: string
+              format: date-time
+              description: Timestamp when the ticket was created
+            updatedAt:
+              type: string
+              format: date-time
+              description: Timestamp when the ticket was last updated
+
+    ListTicketResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/TicketResponse"
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: Error code identifier
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: array
+          items:
+            type: string
+          nullable: true
+          description: Additional error details
+
+  responses:
+    UnauthorizedError:
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            code: unauthorized
+            message: Missing bearer token
+
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            code: ticket_not_found
+            message: Ticket not found
+
+    BadRequestError:
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            code: bad_request
+            message: Validation failed
+            details:
+              - "Title is required and must be between 1 and 50 characters"
+              - "Description is required and must be between 1 and 250 characters"
+              - "Reporter ID must be a valid UUID format"
+
+    InternalServerError:
+      description: Unexpected internal error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            code: internal_server_error
+            message: Unexpected server error
