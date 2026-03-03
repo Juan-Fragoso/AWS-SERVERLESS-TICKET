@@ -2,14 +2,6 @@
 
 Backend serverless para un sistema de tickets construido con AWS Lambda y DynamoDB.
 
-## 📺 Serie de Videos
-
-Este repositorio contiene el código fuente del tutorial **"Backend Serverless en AWS - Sistema de Gestión Tickets"** de mi canal de YouTube.
-
-- **Canal de YouTube**: [@luisguisadocloud](https://www.youtube.com/@luisguisadocloud/)
-- **Playlist completa**: [Backend Serverless en AWS - Sistema de Gestión Tickets](https://www.youtube.com/playlist?list=PLwKkrWXHQV5nyTP3blAumxCKSjHnfq1oA)
-- **Blog**: [blog.luisguisado.cloud](https://blog.luisguisado.cloud/)
-
 ## Descripción
 
 Este proyecto implementa una API serverless que permite crear tickets mediante un endpoint REST. La aplicación utiliza AWS Lambda como función serverless y DynamoDB como base de datos NoSQL para almacenar los tickets.

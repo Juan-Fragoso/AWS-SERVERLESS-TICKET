@@ -3,11 +3,8 @@ info:
   title: Serverless Ticket System - API
   description: REST API for a serverless ticket system built with AWS Lambda and API Gateway.
   contact:
-    email: lguisadom@gmail.com
   version: 1.0.0
-externalDocs:
-  description: My Blog
-  url: https://blog.luisguisado.cloud
+
 tags:
   - name: Ticket
     description: Digital record used to track and manage support requests, problems, or incidents.
