@@ -1,3 +1,4 @@
 node_modules
 deployment-package.zip
 .env
+dist/

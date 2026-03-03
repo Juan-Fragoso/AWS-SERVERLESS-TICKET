@@ -5,13 +5,20 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "zip": "powershell Compress-Archive -Path index.mjs, node_modules -DestinationPath deployment-package.zip -Force"
+    "build": "esbuild src/handler/index.ts --bundle --platform=node --target=node22 --outfile=dist/handler/index.js --sourcemap",
+    "zip": "powershell Compress-Archive -Path dist -DestinationPath deployment-package.zip -Force"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.1000.0",
+    "@aws-sdk/lib-dynamodb": "^3.1001.0",
     "@aws-sdk/util-dynamodb": "^3.996.1"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.161",
+    "esbuild": "^0.27.3",
+    "typescript": "^5.9.3"
   }
 }

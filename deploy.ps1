@@ -1,12 +1,33 @@
-# 1. Limpiar zip anterior si existe
-if (Test-Path "deployment-package.zip") { Remove-Item "deployment-package.zip" }
+# 1. Limpiar archivos y carpetas previas de forma segura
+if (Test-Path "deployment-package.zip") { 
+    Remove-Item "deployment-package.zip" -Force 
+}
 
-Write-Host "--- Generando paquete de despliegue ---" -ForegroundColor Cyan
-# 2. Generar el ZIP
-Compress-Archive -Path "index.mjs", "node_modules" -DestinationPath "deployment-package.zip" -Force
+# Borra 'dist' solo si existe para evitar errores en la consola
+if (Test-Path "dist") { 
+    Remove-Item -Recurse -Force "dist" 
+}
 
-Write-Host "--- Subiendo a AWS Lambda ---" -ForegroundColor Cyan
-# 3. Actualizar el código en AWS
+Write-Host "--- 0. Instalando dependencias ---" -ForegroundColor Cyan
+# Tip: 'npm install' puede ser lento. Si solo quieres asegurar que estén bien,
+# puedes usar 'npm ci' si tienes un package-lock.json (es más rápido y limpio).
+npm install
+
+Write-Host "--- 1. Compilando TypeScript (Build) ---" -ForegroundColor Cyan
+npm run build
+if ($LASTEXITCODE -ne 0) { 
+    Write-Host "ERR: Falló la compilación de TS" -ForegroundColor Red
+    exit $LASTEXITCODE 
+}
+
+Write-Host "--- 2. Generando paquete ZIP ---" -ForegroundColor Cyan
+npm run zip
+if ($LASTEXITCODE -ne 0) { 
+    Write-Host "ERR: Falló la creación del ZIP" -ForegroundColor Red
+    exit $LASTEXITCODE 
+}
+
+Write-Host "--- 3. Subiendo a AWS Lambda ---" -ForegroundColor Cyan
 aws lambda update-function-code --function-name dev-tsb-lbm-crud --zip-file fileb://deployment-package.zip
 
 Write-Host "--- Despliegue completado con éxito ---" -ForegroundColor Green
