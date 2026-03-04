@@ -1,14 +1,15 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { PutCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { CreateTicketDto } from "../dtos/create-ticket.dto";
+import { Router } from "../router/router";
+import { TicketService } from "../services/ticket-service";
 
-const client = new DynamoDBClient({});
-const docClient = DynamoDBDocumentClient.from(client);
+const router = new Router();
+const ticketService = new TicketService();
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
 
   try {
-    if(event.path === "/v1/tickets" && event.httpMethod === "POST")
+    if(router.isCreateTicket(event.path, event.httpMethod))
     {
       if(event.body == null)
       {
@@ -16,20 +17,8 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       }
 
       // Obtenemos los datos del doby
-      const json = JSON.parse(event.body);
-
-      const ticket = {
-        id: crypto.randomUUID(),
-        ...json,
-      }
-
-      const command = new PutCommand({
-        TableName: "dev-tsb-ddb-tickets",
-        Item: ticket,
-      });
-
-      const responseDB = await docClient.send(command);
-      console.log(responseDB);
+      const json: CreateTicketDto = JSON.parse(event.body);
+      const ticket = await ticketService.createTicket(json);
 
       const response = {
         statusCode: 201,
